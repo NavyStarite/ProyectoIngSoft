@@ -1,5 +1,7 @@
 package com.recomendaciones.config;
 
+import com.recomendaciones.security.jwt.AuthEntryPointJwt;
+import com.recomendaciones.security.jwt.AuthTokenFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,13 +16,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import com.recomendaciones.security.jwt.AuthEntryPointJwt;
-import com.recomendaciones.security.jwt.AuthTokenFilter;
-
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class WebSecurityConfig {
+
     @Autowired
     private AuthEntryPointJwt unauthorizedHandler;
 
@@ -31,17 +31,16 @@ public class WebSecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.csrf(csrf -> csrf.disable())
+        http
+            .csrf(csrf -> csrf.disable())
             .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> 
-                auth.requestMatchers("/api/auth/**").permitAll()
-                    .requestMatchers("/api/test/**").permitAll()
-                    .anyRequest().authenticated()
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/", "/login", "/register", "/css/**", "/js/**", "/images/**", "/api/auth/**").permitAll()
+                .anyRequest().authenticated()
             );
-        
+
         http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
-        
         return http.build();
     }
 
