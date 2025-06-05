@@ -1,4 +1,6 @@
-package com.recomendaciones.dto;
+package com.recomendaciones.dto.request;
+// resto del código
+
 
 import jakarta.validation.constraints.NotBlank;
 

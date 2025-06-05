@@ -1,5 +1,8 @@
-package com.recomendaciones.dto;
+package com.recomendaciones.dto.response;
+// resto del código
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import java.util.List;
 
 public class JwtResponse {
@@ -10,6 +13,13 @@ public class JwtResponse {
     private String email;
     private List<String> roles;
 
+
+    public JwtResponse(String token, Long id, String username, String email) {
+        this.token = token;
+        this.id = id;
+        this.username = username;
+        this.email = email;
+    }
     public JwtResponse(String accessToken, Long id, String username, String email, List<String> roles) {
         this.token = accessToken;
         this.id = id;
@@ -17,7 +27,7 @@ public class JwtResponse {
         this.email = email;
         this.roles = roles;
     }
-
+    
     // Getters
     public String getToken() {
         return token;

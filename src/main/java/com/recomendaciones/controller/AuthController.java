@@ -1,8 +1,8 @@
 package com.recomendaciones.controller;
-
 import com.recomendaciones.dto.request.LoginRequest;
 import com.recomendaciones.dto.request.SignupRequest;
 import com.recomendaciones.dto.response.JwtResponse;
+
 import com.recomendaciones.security.jwt.JwtUtils;
 import com.recomendaciones.security.services.UserDetailsImpl;
 import com.recomendaciones.service.UserService;
@@ -36,10 +36,9 @@ public class AuthController {
         String jwt = jwtUtils.generateJwtToken(authentication);
         
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();        
-        return ResponseEntity.ok(new JwtResponse(jwt, 
-                                               userDetails.getId(), 
-                                               userDetails.getUsername(), 
-                                               userDetails.getEmail()));
+        return ResponseEntity.ok(new JwtResponse(jwt, userDetails.getId(), userDetails.getUsername(), userDetails.getEmail()));
+
+
     }
 
     @PostMapping("/signup")
