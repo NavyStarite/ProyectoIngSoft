@@ -14,9 +14,10 @@ public class PageController {
     public String showLoginForm(
         @RequestParam(value = "error", required = false) String error,
         @RequestParam(value = "logout", required = false) String logout,
-        Model model,
-        Authentication authentication) {
+        Model model) {
         
+        // Verificar si el usuario ya está autenticado
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.isAuthenticated() && 
             !authentication.getName().equals("anonymousUser")) {
             return "redirect:/dashboard";
@@ -34,7 +35,9 @@ public class PageController {
     }
 
     @GetMapping("/register")
-    public String showRegisterForm(Authentication authentication) {
+    public String showRegisterForm() {
+        // Verificar si el usuario ya está autenticado
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.isAuthenticated() && 
             !authentication.getName().equals("anonymousUser")) {
             return "redirect:/dashboard";
@@ -50,7 +53,10 @@ public class PageController {
     @GetMapping("/dashboard")
     public String dashboard(Model model) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        model.addAttribute("username", auth.getName());
-        return "dashboard";
+        if (auth != null && auth.isAuthenticated() && !auth.getName().equals("anonymousUser")) {
+            model.addAttribute("username", auth.getName());
+            return "dashboard";
+        }
+        return "redirect:/login";
     }
 }

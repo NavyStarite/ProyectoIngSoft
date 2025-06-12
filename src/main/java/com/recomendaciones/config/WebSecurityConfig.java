@@ -60,12 +60,32 @@ public class WebSecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            
+            // Deshabilitar el formulario de login por defecto de Spring Security
+            .formLogin(form -> form.disable())
+            .httpBasic(basic -> basic.disable())
+            
             .authorizeHttpRequests(auth -> auth
+                // Permitir acceso a las rutas de autenticación API
                 .requestMatchers("/api/auth/**").permitAll()
+                
+                // Permitir acceso a las páginas web sin autenticación
                 .requestMatchers("/", "/home", "/login", "/register").permitAll()
-                .requestMatchers("/css/**", "/js/**", "/images/**").permitAll()
+                
+                // Permitir acceso a recursos estáticos
+                .requestMatchers("/css/**", "/js/**", "/images/**", "/static/**").permitAll()
+                
+                // Permitir acceso a endpoints de prueba
                 .requestMatchers("/api/test/**").permitAll()
-                .anyRequest().authenticated()
+                
+                // Las páginas del dashboard requieren autenticación
+                .requestMatchers("/dashboard").authenticated()
+                
+                // Todas las demás rutas de API requieren autenticación
+                .requestMatchers("/api/**").authenticated()
+                
+                // Cualquier otra petición puede pasar (para manejar errores 404, etc.)
+                .anyRequest().permitAll()
             );
 
         http.authenticationProvider(authenticationProvider());

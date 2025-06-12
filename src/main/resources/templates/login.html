@@ -18,15 +18,15 @@
             <h2 class="text-center mb-4">Iniciar Sesión</h2>
 
             <!-- Mensajes de error/éxito -->
-            <div th:if="${param.error}" class="alert alert-danger">
-                Usuario o contraseña inválidos.
-            </div>
+            <div id="errorMessage" class="alert alert-danger" style="display: none;"></div>
+            <div id="successMessage" class="alert alert-success" style="display: none;"></div>
+
             <div th:if="${param.logout}" class="alert alert-success">
                 Has cerrado sesión exitosamente.
             </div>
 
             <!-- Formulario de login -->
-            <form th:action="@{/login}" method="post">
+            <form id="loginForm">
                 <div class="mb-3">
                     <label for="username" class="form-label">Usuario</label>
                     <input type="text" class="form-control" id="username" name="username" required>
@@ -43,5 +43,60 @@
             </div>
         </div>
     </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            const loginData = {
+                username: username,
+                password: password
+            };
+            
+            fetch('/api/auth/signin', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(loginData)
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error('Credenciales inválidas');
+                }
+            })
+            .then(data => {
+                // Guardar el token JWT en localStorage
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('username', data.username);
+                
+                // Mostrar mensaje de éxito
+                document.getElementById('successMessage').textContent = 'Login exitoso. Redirigiendo...';
+                document.getElementById('successMessage').style.display = 'block';
+                document.getElementById('errorMessage').style.display = 'none';
+                
+                // Redirigir al dashboard
+                setTimeout(() => {
+                    window.location.href = '/dashboard';
+                }, 1000);
+            })
+            .catch(error => {
+                // Mostrar mensaje de error
+                document.getElementById('errorMessage').textContent = error.message;
+                document.getElementById('errorMessage').style.display = 'block';
+                document.getElementById('successMessage').style.display = 'none';
+            });
+        });
+
+        // Verificar si ya hay un token almacenado
+        if (localStorage.getItem('token')) {
+            window.location.href = '/dashboard';
+        }
+    </script>
 </body>
 </html>
