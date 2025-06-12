@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  # Base de datos MySQL
+  mysql-db:
+    image: mysql:8.0
+    container_name: media-recommender-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: media_recommender
+      MYSQL_USER: appuser
+      MYSQL_PASSWORD: apppassword
+    ports:
+      - "3307:3306"  # Puerto externo 3307 para evitar conflictos
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - media-recommender-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  # Aplicación Spring Boot
+  media-recommender-app:
+    build: .
+    container_name: media-recommender-app
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+    environment:
+      # Variables de entorno para la base de datos
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/media_recommender?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: appuser
+      SPRING_DATASOURCE_PASSWORD: apppassword
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      # JWT Configuration
+      APP_JWT_SECRET: JWTSuperSecretKey2024MediaRecommender
+      APP_JWT_EXPIRATION_MS: 86400000
+    ports:
+      - "8081:8081"
+    networks:
+      - media-recommender-network
+    restart: unless-stopped
+    volumes:
+      - app_logs:/app/logs
+
+volumes:
+  mysql_data:
+  app_logs:
+
+networks:
+  media-recommender-network:
+    driver: bridge
